@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: ./banco
+    container_name: db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - plannernet
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    networks:
+      - plannernet
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+      - APP_PASSWORD=${APP_PASSWORD}
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - PRICE_ID_3_MONTHS=${PRICE_ID_3_MONTHS}
+      - PRICE_ID_4_MONTHS=${PRICE_ID_4_MONTHS}
+      - PRICE_ID_5_MONTHS=${PRICE_ID_5_MONTHS}
+      - PRICE_ID_6_MONTHS=${PRICE_ID_6_MONTHS}
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - plannernet
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+
+networks:
+  plannernet:
+    driver: bridge
+
+volumes:
+  db_data:  
+
