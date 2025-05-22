@@ -2,7 +2,6 @@
 /frontend/node_modules
 .env
 backend/.env
-banco/init.sql
 frontend/next-env.d.ts
 frontend/next.config.js
 

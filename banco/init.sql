@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS clientes (
+    id SERIAL PRIMARY KEY,
+    altura INTEGER NOT NULL,
+    peso INTEGER NOT NULL,
+    idade INTEGER NOT NULL,
+    objetivo VARCHAR(255) NOT NULL,
+    dias INTEGER NOT NULL,
+    meses INTEGER NOT NULL,
+    nivel VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    data_pagamento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL DEFAULT 'pendente'
+);
