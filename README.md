@@ -6,10 +6,10 @@ Aplicação completa desenvolvida para a disciplina de **DevOps**, focada em con
 
 ## 👨‍💻 Autor
 
-- **Eduardo Henrique Spinelli**  
-- RA: 800220  
-- Curso: Ciência da Computação  
-- Departamento de Computação – São Carlos, SP  
+- **Eduardo Henrique Spinelli**
+- RA: 800220
+- Curso: Ciência da Computação
+- Departamento de Computação – São Carlos, SP
 - Professor: Delano Medeiros Beder
 
 ---
@@ -20,7 +20,7 @@ A aplicação é composta por **três containers Docker**:
 
 | Container | Descrição |
 |----------|-----------|
-| **backend** | API Flask que processa dados do usuário, realiza integração com Stripe, envia e-mail e acessa o banco de dados. |
+| **backend** | API Flask que processa dados do usuário, realiza integração com Stripe, envia e-mails via SMTP e acessa o banco de dados PostgreSQL. |
 | **frontend** | Aplicação Next.js (React) que coleta os dados do usuário e exibe informações dinâmicas como a contagem de clientes. |
 | **db** | Banco de dados PostgreSQL com criação automática da tabela `clientes` via script `init.sql`. |
 
@@ -43,13 +43,14 @@ A aplicação é composta por **três containers Docker**:
 ### Pré-requisitos:
 - Docker
 - Docker Compose
+- Arquivo `.env` configurado com as variáveis necessárias
 
 ### Passos:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/plannerrun-devops.git
-cd plannerrun-devops
+git clone https://github.com/Edu-Spinelli/T1-DevOps-Plannerrun.git
+cd T1-DevOps-Plannerrun
 
 # Suba os containers
 docker-compose up --build
@@ -57,8 +58,8 @@ docker-compose up --build
 
 ### Acesse:
 
-* Frontend: [http://localhost:3000](http://localhost:3000)
-* Backend API: [http://localhost:5000/api/clientes-count](http://localhost:5000/api/clientes-count)
+* Frontend: [http://localhost:80](http://localhost:80)
+* Backend API: Disponível internamente para o frontend via rede Docker
 
 ---
 
@@ -95,9 +96,29 @@ volumes:
 
 ---
 
-## 🔐 CORS e Comunicação entre Containers
+## 🔐 Variáveis de Ambiente
 
-O backend está habilitado com CORS para aceitar conexões do frontend, tanto em localhost quanto em ambiente real (`plannerrun.com`). A variável de ambiente `NEXT_PUBLIC_API_URL` é usada no frontend para definir dinamicamente a URL da API.
+O projeto utiliza as seguintes variáveis de ambiente (definidas no arquivo `.env`):
+
+- **Banco de Dados**:
+  - `DB_NAME`: Nome do banco de dados
+  - `DB_USER`: Usuário do banco de dados
+  - `DB_PASSWORD`: Senha do banco de dados
+  - `DB_HOST`: Host do banco de dados
+  - `DB_PORT`: Porta do banco de dados
+
+- **SMTP**:
+  - `SMTP_SERVER`: Servidor SMTP
+  - `SMTP_PORT`: Porta SMTP
+  - `SENDER_EMAIL`: Email remetente
+  - `APP_PASSWORD`: Senha do app Gmail
+
+- **Stripe**:
+  - `STRIPE_API_KEY`: Chave API do Stripe
+  - `PRICE_ID_3_MONTHS`: ID do preço para 3 meses
+  - `PRICE_ID_4_MONTHS`: ID do preço para 4 meses
+  - `PRICE_ID_5_MONTHS`: ID do preço para 5 meses
+  - `PRICE_ID_6_MONTHS`: ID do preço para 6 meses
 
 ---
 
@@ -111,12 +132,18 @@ DevOps/
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
-│   ├── (código React/Next.js)
+│   ├── app/
+│   │   ├── cadastro/
+│   │   ├── success/
+│   │   └── page.tsx
+│   ├── nginx.conf
 │   └── Dockerfile
 ├── banco/
 │   ├── init.sql
 │   └── Dockerfile
-└── docker-compose.yml
+├── docker-compose.yaml
+├── .env
+└── README.md
 ```
 
 ---
@@ -125,7 +152,7 @@ DevOps/
 
 Ao subir os containers:
 
-* A aplicação web estará acessível em `localhost:3000`
+* A aplicação web estará acessível em `localhost:80`
 * O backend responderá requisições da API
 * O banco armazenará dados dos usuários mesmo após reinicializações
 * O Stripe gerenciará pagamentos e redirecionará corretamente
