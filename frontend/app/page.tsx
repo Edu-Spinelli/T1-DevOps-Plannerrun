@@ -58,7 +58,7 @@ const CountdownTimer = () => {
   // Terceiro useEffect para buscar dados apenas no cliente
   useEffect(() => {
     if (isClient) {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api"
   
       fetch(`${API_URL}/clientes-count`)
         .then((response) => response.json())

@@ -8,7 +8,7 @@ import * as z from "zod"
 import { Info, Mail, Ruler, Weight, Calendar, Users, Star, Target, CheckCircle, ArrowRight, Shield } from "lucide-react"
 import { Card } from "@/components/ui/card"
 
-const API_URL = "http://localhost:5000/api"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api" 
 
 const nivelDescricoes = {
   Iniciante: "Você começou a correr há menos de 6 meses, corre até 5km ou está começando agora",

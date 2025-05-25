@@ -20,8 +20,7 @@ services:
     container_name: backend
     depends_on:
       - db
-    ports:
-      - "5000:5000"
+
     networks:
       - plannernet
     environment:
@@ -47,11 +46,12 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:3000"
+      - "80:80"
     networks:
       - plannernet
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      - NEXT_PUBLIC_API_URL=/api
+
 
 networks:
   plannernet:

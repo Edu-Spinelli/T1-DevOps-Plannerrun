@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { CheckCircle } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "/api";
 
 function SuccessPageContent() {
   const router = useRouter();
