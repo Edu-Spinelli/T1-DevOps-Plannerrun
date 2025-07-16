@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    app: db
+spec:
+  replicas: {{ .Values.replicaCount.db }}
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: db-persistent-storage
+          persistentVolumeClaim:
+            claimName: {{ include "plannerrun-chart.fullname" . }}-db-pvc
+        - name: db-init-script
+          configMap:
+            name: db-init-script
+
+      containers:
+      - name: postgres
+        image: {{ .Values.database.image }}:{{ .Values.database.tag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_NAME
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_PASSWORD
+        # Optional: Add custom PostgreSQL configuration via environment
+        - name: POSTGRES_INITDB_ARGS
+          value: "--data-checksums"
+        # Remove this line - it's not needed and might cause confusion
+        # - name: POSTGRES_CONFIG_FILE
+        #   value: "/var/lib/postgresql/data/postgresql.conf"
+
+        volumeMounts:
+        - name: db-persistent-storage
+          mountPath: /var/lib/postgresql/data
+        - name: db-init-script
+          mountPath: /docker-entrypoint-initdb.d
+
+        # Improved health checks
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 60  # Allow up to 5 minutes for startup
+
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Resource limits for stability
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.replicaCount.frontend }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: {{ .Values.frontend.image }}:{{ .Values.frontend.tag }}
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: http://{{ .Values.ingress.host }}/api

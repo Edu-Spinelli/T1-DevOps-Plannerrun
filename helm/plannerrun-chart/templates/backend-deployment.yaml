@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.replicaCount.backend }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: {{ .Values.backend.image }}:{{ .Values.backend.tag }}
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: DB_PASSWORD
+        - name: DB_HOST
+          value: db-service
+        - name: DB_PORT
+          value: "5432"
+        - name: SMTP_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: SMTP_SERVER
+        - name: SMTP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: SMTP_PORT
+        - name: SENDER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: SENDER_EMAIL
+        - name: APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: APP_PASSWORD
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: STRIPE_API_KEY
+        - name: PRICE_ID_3_MONTHS
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: PRICE_ID_3_MONTHS
+        - name: PRICE_ID_4_MONTHS
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: PRICE_ID_4_MONTHS
+        - name: PRICE_ID_5_MONTHS
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: PRICE_ID_5_MONTHS
+        - name: PRICE_ID_6_MONTHS
+          valueFrom:
+            secretKeyRef:
+              name: planner-secrets
+              key: PRICE_ID_6_MONTHS
