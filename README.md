@@ -1,167 +1,132 @@
-# PlannerRun - Aplicação Dockerizada
 
-Aplicação completa desenvolvida para a disciplina de **DevOps**, focada em conteinerização com Docker. O projeto simula um sistema de geração de planos de corrida personalizados com inteligência artificial, integrado a Stripe, banco de dados PostgreSQL e frontend em React/Next.js.
+# PlannerRun - Implantação com Kubernetes e Helm
 
----
+Aplicação completa desenvolvida para a disciplina de **DevOps**, focada na conteinerização e orquestração de uma aplicação multicamada com Kubernetes e Helm. O projeto simula um sistema de geração de planos de corrida personalizados, utilizando uma API em Flask, frontend em Next.js e banco de dados PostgreSQL.
 
 ## 👨‍💻 Autor
 
-- **Eduardo Henrique Spinelli**
-- RA: 800220
-- Curso: Ciência da Computação
-- Departamento de Computação – São Carlos, SP
-- Professor: Delano Medeiros Beder
+  - **Eduardo Henrique Spinelli**
+  - **RA:** 800220
+  - **Curso:** Ciência da Computação
+  - **Departamento de Computação** – São Carlos, SP
+  - **Professor:** Delano Medeiros Beder
 
----
+## 🧱 Arquitetura e Tecnologias
 
-## 📦 Estrutura da Aplicação
+A aplicação é orquestrada no Kubernetes e utiliza os seguintes componentes e tecnologias:
 
-A aplicação é composta por **três containers Docker**:
+| Categoria | Tecnologia/Componente |
+| :--- | :--- |
+| **Orquestração** | Kubernetes (Minikube), Helm |
+| **Conteinerização** | Docker |
+| **Backend** | Python 3.10, Flask, Gunicorn |
+| **Frontend** | Node.js, React (Next.js), Nginx |
+| **Banco de Dados** | PostgreSQL 15 |
+| **Gateway de Pagamento** | Stripe API |
+| **Gateway de Email** | SMTP (Gmail) |
 
-| Container | Descrição |
-|----------|-----------|
-| **backend** | API Flask que processa dados do usuário, realiza integração com Stripe, envia e-mails via SMTP e acessa o banco de dados PostgreSQL. |
-| **frontend** | Aplicação Next.js (React) que coleta os dados do usuário e exibe informações dinâmicas como a contagem de clientes. |
-| **db** | Banco de dados PostgreSQL com criação automática da tabela `clientes` via script `init.sql`. |
+A implantação no Kubernetes é gerenciada por um Helm Chart que define os seguintes recursos:
 
----
+  * **Deployments** para os serviços de `backend`, `frontend` e `db`.
+  * **Services** para a comunicação interna entre os componentes.
+  * **Ingress** para expor o frontend na URL `k8s.local`.
+  * **PersistentVolumeClaim** para garantir a persistência dos dados do PostgreSQL.
+  * **ConfigMap** para o script de inicialização do banco de dados.
+  * **Secrets** para o gerenciamento seguro de credenciais e chaves de API.
 
-## 🧱 Tecnologias Utilizadas
+## 🚀 Como Executar a Aplicação no Minikube
 
-- **Docker / Docker Compose**
-- **Python 3.10 + Flask**
-- **Node.js + React + Next.js**
-- **PostgreSQL 15**
-- **Stripe API**
-- **SMTP via Gmail**
-- **Volume Docker para persistência de banco**
+Siga os passos abaixo para implantar a aplicação em um cluster Minikube local de forma automatizada e segura.
 
----
+### Pré-requisitos
 
-## 🚀 Como Executar
+  * Docker
+  * Minikube
+  * Helm
+  * `kubectl`
 
-### Pré-requisitos:
-- Docker
-- Docker Compose
-- Arquivo `.env` configurado com as variáveis necessárias
+### Passo 1: Preparar o Ambiente
 
-### Passos:
+Clone o repositório para a sua máquina local:
 
 ```bash
-# Clone o repositório
 git clone https://github.com/Edu-Spinelli/T1-DevOps-Plannerrun.git
 cd T1-DevOps-Plannerrun
-
-# Suba os containers
-docker-compose up --build
 ```
 
-### Acesse:
+### Passo 2: Configurar os Segredos
 
-* Frontend: [http://localhost:80](http://localhost:80)
-* Backend API: Disponível internamente para o frontend via rede Docker
+Crie um arquivo chamado `secrets.values.yaml` dentro da pasta `helm/`. Este arquivo conterá todas as suas credenciais e **não deve ser versionado no Git**.
 
----
-
-## 🗃️ Banco de Dados
-
-Ao subir o container `db`, a tabela `clientes` será criada automaticamente com a seguinte estrutura:
-
-```sql
-CREATE TABLE clientes (
-  id SERIAL PRIMARY KEY,
-  altura INTEGER NOT NULL,
-  peso INTEGER NOT NULL,
-  idade INTEGER NOT NULL,
-  objetivo VARCHAR(255) NOT NULL,
-  dias INTEGER NOT NULL,
-  meses INTEGER NOT NULL,
-  nivel VARCHAR(50) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  data_pagamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  status VARCHAR(50) DEFAULT 'ativo'
-);
-```
-
----
-
-## 🔁 Persistência com Docker Volumes
-
-A configuração abaixo garante que os dados do PostgreSQL **não sejam perdidos** mesmo após `docker-compose down`:
+Use o seguinte modelo para o seu `secrets.values.yaml`:
 
 ```yaml
-volumes:
-  - db_data:/var/lib/postgresql/data
+# Este arquivo contém segredos e NÃO DEVE ser comitado no Git.
+secrets:
+  DB_NAME: "plannerrun"
+  DB_USER: "seu_usuario_db"
+  DB_PASSWORD: "sua_senha_db"
+  SMTP_SERVER: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SENDER_EMAIL: "seu_email@gmail.com"
+  APP_PASSWORD: "sua_senha_de_app_gmail"
+  STRIPE_API_KEY: "sua_chave_secreta_stripe"
+  PRICE_ID_3_MONTHS: "seu_price_id"
+  PRICE_ID_4_MONTHS: "seu_price_id"
+  PRICE_ID_5_MONTHS: "seu_price_id"
+  PRICE_ID_6_MONTHS: "seu_price_id"
 ```
 
----
+**Atenção:** Certifique-se de que o arquivo `secrets.values.yaml` está listado no seu `.gitignore`.
 
-## 🔐 Variáveis de Ambiente
+### Passo 3: Executar o Script de Implantação
 
-O projeto utiliza as seguintes variáveis de ambiente (definidas no arquivo `.env`):
+O script `deploy-to-minikube.sh` automatiza todo o processo: inicia o Minikube, constrói as imagens, atualiza o `/etc/hosts` e instala o Helm chart.
 
-- **Banco de Dados**:
-  - `DB_NAME`: Nome do banco de dados
-  - `DB_USER`: Usuário do banco de dados
-  - `DB_PASSWORD`: Senha do banco de dados
-  - `DB_HOST`: Host do banco de dados
-  - `DB_PORT`: Porta do banco de dados
+Conceda permissão de execução e rode o script:
 
-- **SMTP**:
-  - `SMTP_SERVER`: Servidor SMTP
-  - `SMTP_PORT`: Porta SMTP
-  - `SENDER_EMAIL`: Email remetente
-  - `APP_PASSWORD`: Senha do app Gmail
+```bash
+chmod +x deploy-to-minikube.sh
+./deploy-to-minikube.sh
+```
 
-- **Stripe**:
-  - `STRIPE_API_KEY`: Chave API do Stripe
-  - `PRICE_ID_3_MONTHS`: ID do preço para 3 meses
-  - `PRICE_ID_4_MONTHS`: ID do preço para 4 meses
-  - `PRICE_ID_5_MONTHS`: ID do preço para 5 meses
-  - `PRICE_ID_6_MONTHS`: ID do preço para 6 meses
+O script poderá solicitar sua senha de `sudo` para modificar o arquivo `/etc/hosts` e apontar `k8s.local` para o IP do Minikube.
 
----
+### Passo 4: Acessar a Aplicação
+
+Após a conclusão do script, a aplicação estará disponível no seu navegador no seguinte endereço:
+
+  * **Frontend:** [http://k8s.local](http://k8s.local)
 
 ## 📂 Estrutura do Projeto
 
 ```
-DevOps/
-├── backend/
-│   ├── app.py
-│   ├── db.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── app/
-│   │   ├── cadastro/
-│   │   ├── success/
-│   │   └── page.tsx
-│   ├── nginx.conf
-│   └── Dockerfile
-├── banco/
-│   ├── init.sql
-│   └── Dockerfile
-├── docker-compose.yaml
-├── .env
-└── README.md
+.
+├── backend/                # Código-fonte da API Flask
+├── banco/                  # Script de inicialização do DB
+├── frontend/               # Código-fonte da aplicação Next.js
+├── helm/
+│   ├── secrets.values.yaml  # Arquivo com segredos (NÃO VERSIONADO)
+│   └── plannerrun-chart/   # Helm Chart para implantação
+│       ├── Chart.yaml
+│       ├── templates/
+│       │   ├── backend-deployment.yaml
+│       │   ├── db-deployment.yaml
+│       │   ├── db-pvc.yaml
+│       │   ├── frontend-deployment.yaml
+│       │   ├── ingress.yaml
+│       │   ├── service-account.yaml
+│       │   ├── service-backend.yaml
+│       │   ├── service-db.yaml
+│       │   ├── service-frontend.yaml
+│       │   └── secrets.yaml
+│       └── values.yaml     # Valores padrão do Chart (sem segredos)
+├── .gitignore
+├── deploy-to-minikube.sh   # Script de automação do deploy
+├── docker-compose.yaml     # Para desenvolvimento local (opcional)
+├── README.md
 ```
-
----
-
-## ✅ Resultado Esperado
-
-Ao subir os containers:
-
-* A aplicação web estará acessível em `localhost:80`
-* O backend responderá requisições da API
-* O banco armazenará dados dos usuários mesmo após reinicializações
-* O Stripe gerenciará pagamentos e redirecionará corretamente
-* O número de compradores será exibido em tempo real
-
----
 
 ## 📝 Licença
 
-Uso educacional. Projeto desenvolvido como prática de conteinerização para a disciplina de DevOps – UFSCar.
-
-
+Uso educacional. Projeto desenvolvido como prática para a disciplina de DevOps – UFSCar.
