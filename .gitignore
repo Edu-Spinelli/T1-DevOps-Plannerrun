@@ -4,8 +4,6 @@
 backend/.env
 frontend/next-env.d.ts
 frontend/next.config.js
-helm/plannerrun-chart/values.yaml
-helm/plannerrun-chart/templates/secrets.yaml
-deploy-to-minikube.sh
+helm/secrets.values.yaml
 
 

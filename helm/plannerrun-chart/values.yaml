@@ -1,0 +1,41 @@
+# === Image settings ===
+backend:
+  image: backend-plannerrun
+  tag: latest
+
+frontend:
+  image: frontend-plannerrun
+  tag: latest
+
+database:
+  image: postgres
+  tag: "15"
+  storage: 1Gi
+
+# === Segredos (os valores reais devem estar em um arquivo 'secrets.values.yaml' não versionado) ===
+secrets:
+  BASE_URL: "http://k8s.local"
+  DB_NAME: ""
+  DB_USER: ""
+  DB_PASSWORD: ""
+  SMTP_SERVER: ""
+  SMTP_PORT: ""
+  SENDER_EMAIL: ""
+  APP_PASSWORD: ""
+  STRIPE_API_KEY: ""
+  PRICE_ID_3_MONTHS: ""
+  PRICE_ID_4_MONTHS: ""
+  PRICE_ID_5_MONTHS: ""
+  PRICE_ID_6_MONTHS: ""
+
+# === Ingress ===
+ingress:
+  enabled: true
+  host: k8s.local
+  annotations: {}
+
+# === Réplicas ===
+replicaCount:
+  backend: 1
+  frontend: 1
+  db: 1
